@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Email Classifier</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; }
+        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .result { margin-top: 20px; padding: 15px; border-radius: 5px; display: none; }
+        .spam { background-color: #ffe6e6; border: 2px solid #ff9999; color: #cc0000; }
+        .ham { background-color: #e6ffe6; border: 2px solid #99ff99; color: #009900; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #2c3e50; text-align: center; margin-bottom: 30px;">Spam Email Classifier</h1>
+        
+        <form id="classifierForm" style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label for="email-text" style="font-weight: bold; color: #34495e;">Enter Email Text:</label>
+                <textarea 
+                    id="email-text" 
+                    name="email_text" 
+                    rows="8" 
+                    style="padding: 15px; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 16px; resize: vertical;"
+                    placeholder="Paste your email text here..."
+                    required
+                ></textarea>
+            </div>
+            
+            <button 
+                type="submit" 
+                style="background-color: #3498db; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; align-self: flex-end;"
+            >
+                Check for Spam
+            </button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('classifierForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const text = formData.get('email_text');
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text }),
+                });
+
+                const data = await response.json();
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = `result ${data.is_spam ? 'spam' : 'ham'}`;
+                resultDiv.innerHTML = data.is_spam 
+                    ? "🚨 This is SPAM!" 
+                    : "✅ This is HAM (not spam)!";
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request');
+            }
+        });
+    </script>
+</body>
+</html>
